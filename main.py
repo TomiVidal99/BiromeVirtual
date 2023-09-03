@@ -27,32 +27,28 @@ def drawGreenRects(frame, mouse):
     mask_green = cv.inRange(hsv, lower_green, upper_green)
 
     # Create a mask to isolate green areas
-    mask_blue = cv.inRange(hsv, lower_green, upper_green)
+    mask_blue = cv.inRange(hsv, lower_blue, upper_blue)
 
     # Find contours in the binary mask
-    contours, _ = cv.findContours(mask_green, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+    contours_green, _ = cv.findContours(mask_green, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
     
-    contours, _ = cv.findContours(mask_green, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
-
     # Filter contours based on area
-    filtered_contours = [contour for contour in contours if cv.contourArea(contour) >= MIN_AREA]
-
-    # Draw bounding boxes around the green objects
-    max_contours = 0
-    for contour in filtered_contours:
-        if (max_contours > 1):
-            break
-        x, y, w, h = cv.boundingRect(contour)
-        # cv.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
-        # cv.line(frame, (xf, yf), (w, h), (255, 0, 0), 2)
-        max_contours += 1
-
-    if (len(filtered_contours) < 2):
-        return
+    filtered_contours_green = [contour for contour in contours_green if cv.contourArea(contour) >= MIN_AREA]
     
+    # Find contours in the binary mask
+    contours_blue, _ = cv.findContours(mask_blue, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+    
+    # Filter contours based on area
+    filtered_contours_blue = [contour for contour in contours_blue if cv.contourArea(contour) >= MIN_AREA]
 
-    x1, y1, w1, h1 = cv.boundingRect(filtered_contours[0])
-    x2, y2, w2, h2 = cv.boundingRect(filtered_contours[1])
+    if (len(filtered_contours_green) == 0):
+        return
+
+    if (len(filtered_contours_blue) == 0):
+        return
+
+    x1, y1, w1, h1 = cv.boundingRect(filtered_contours_green[0])
+    x2, y2, w2, h2 = cv.boundingRect(filtered_contours_blue[0])
     pf = (x1, y1)
     pi = (x2, y2)
     # cv.circle(frame, pi, 10, (0, 0, 255), 2)

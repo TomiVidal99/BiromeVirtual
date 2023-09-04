@@ -4,7 +4,6 @@ Comienzo de algo épico...
 
 import cv2 as cv
 import numpy as np
-from pynput.mouse import Button, Controller
 import screeninfo
 import pyautogui
 
@@ -12,6 +11,7 @@ MIN_AREA = 300
 
 SCREEN_WIDTH = screeninfo.get_monitors()[0].width
 SCREEN_HEIGHT = screeninfo.get_monitors()[0].height
+
 
 def mapPointToScreen(x, y):
     """
@@ -31,7 +31,7 @@ def mapPointToScreen(x, y):
     return x_mapped, y_mapped
 
 
-def drawGreenRects(frame, mouse):
+def drawGreenRects(frame):
     """
     Dibuja en la pantalla los rectangulos
     """
@@ -53,21 +53,29 @@ def drawGreenRects(frame, mouse):
     mask_blue = cv.inRange(hsv, lower_blue, upper_blue)
 
     # Find contours in the binary mask
-    contours_green, _ = cv.findContours(mask_green, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
-    
-    # Filter contours based on area
-    filtered_contours_green = [contour for contour in contours_green if cv.contourArea(contour) >= MIN_AREA]
-    
-    # Find contours in the binary mask
-    contours_blue, _ = cv.findContours(mask_blue, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
-    
-    # Filter contours based on area
-    filtered_contours_blue = [contour for contour in contours_blue if cv.contourArea(contour) >= MIN_AREA]
+    contours_green, _ = cv.findContours(
+        mask_green, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE
+    )
 
-    if (len(filtered_contours_green) == 0):
+    # Filter contours based on area
+    filtered_contours_green = [
+        contour for contour in contours_green if cv.contourArea(contour) >= MIN_AREA
+    ]
+
+    # Find contours in the binary mask
+    contours_blue, _ = cv.findContours(
+        mask_blue, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE
+    )
+
+    # Filter contours based on area
+    filtered_contours_blue = [
+        contour for contour in contours_blue if cv.contourArea(contour) >= MIN_AREA
+    ]
+
+    if len(filtered_contours_green) == 0:
         return
 
-    if (len(filtered_contours_blue) == 0):
+    if len(filtered_contours_blue) == 0:
         return
 
     x1, y1, w1, h1 = cv.boundingRect(filtered_contours_green[0])
@@ -90,29 +98,29 @@ def main():
     if not cap.isOpened():
         print("Cannot open camera")
         exit()
-    
-    mouse = Controller()
+
     while True:
         # Capture frame-by-frame
         ret, frame = cap.read()
 
         # muta frame
-        drawGreenRects(frame, mouse)
+        drawGreenRects(frame)
 
         # if frame is read correctly ret is True
         if not ret:
             print("Can't receive frame (stream end?). Exiting ...")
             break
 
-        cv.imshow('frame', frame)
+        cv.imshow("frame", frame)
 
         # salir cuando apretas la Q
-        if cv.waitKey(1) == ord('q'):
+        if cv.waitKey(1) == ord("q"):
             break
     # When everything done, release the capture
     cap.release()
     cv.destroyAllWindows()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     # execute only if run as the entry point into the program
     main()

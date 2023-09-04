@@ -4,7 +4,7 @@ Una birome que reemplaza al mouse virtualmente a partir IA
 ## Dependencias
 - opencv-python
 - numpy
-- pynput
+- pyautogui
 
 ## TODO
 - [ ] .

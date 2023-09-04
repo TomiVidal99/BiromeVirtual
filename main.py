@@ -5,8 +5,31 @@ Comienzo de algo épico...
 import cv2 as cv
 import numpy as np
 from pynput.mouse import Button, Controller
+import screeninfo
+import pyautogui
 
 MIN_AREA = 300
+
+SCREEN_WIDTH = screeninfo.get_monitors()[0].width
+SCREEN_HEIGHT = screeninfo.get_monitors()[0].height
+
+def mapPointToScreen(x, y):
+    """
+    Mapea un punto a un punto en la pantalla
+    """
+    x_min = 0
+    y_min = 0
+    x_max = 640
+    y_max = 480
+
+    # Map x from its current range to the screen width
+    x_mapped = int((x - x_min) / (x_max - x_min) * SCREEN_WIDTH)
+
+    # Map y from its current range to the screen height
+    y_mapped = int((y - y_min) / (y_max - y_min) * SCREEN_HEIGHT)
+
+    return x_mapped, y_mapped
+
 
 def drawGreenRects(frame, mouse):
     """
@@ -17,7 +40,7 @@ def drawGreenRects(frame, mouse):
     hsv = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
 
     # Define lower and upper bounds for green color in HSV
-    lower_green = np.array([80, 100, 100])  # Lower hue value
+    lower_green = np.array([83, 100, 100])  # Lower hue value
     upper_green = np.array([90, 255, 255])  # Upper hue value
 
     lower_blue = np.array([100, 100, 100])  # Lower Hue, Saturation, and Value values
@@ -57,6 +80,9 @@ def drawGreenRects(frame, mouse):
     cv.circle(frame, pf, 5, (0, 0, 255), 4)
     # mx, my = mouse.position
     # mouse.move(mx+w, my+h)
+    mpx, mpy = mapPointToScreen(x1, y1)
+    print(f"En la pantalla: ({mpx}, {mpy})")
+    pyautogui.moveTo(mpx, mpy)
 
 
 def main():

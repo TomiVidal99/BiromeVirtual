@@ -2,7 +2,7 @@
 Una birome que reemplaza al mouse virtualmente a partir IA
 
 ## Diagrama
-(diagrama)[./basic_diagram.png]
+[diagrama](./basic_diagram.png)
 
 ## Dependencias
 - opencv-python

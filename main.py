@@ -1,11 +1,12 @@
 """
-Comienzo de algo épico...
+The start of something epic...
 """
 
 import cv2 as cv
 import numpy as np
 import screeninfo
 import pyautogui
+from src.App import App
 
 MIN_AREA = 300
 
@@ -123,4 +124,4 @@ def main():
 
 if __name__ == "__main__":
     # execute only if run as the entry point into the program
-    main()
+    app = App()

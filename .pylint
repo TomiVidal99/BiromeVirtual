@@ -1,0 +1,5 @@
+[pylint]
+#disable = C0103, C0114, C0115, C0116  # Disable specific checks (e.g., naming conventions and missing docstrings)
+
+#[MASTER]
+#init-hook = "import sys; sys.path.append('path/to/your/project')"  # Add your project path to PYTHONPATH

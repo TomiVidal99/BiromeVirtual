@@ -3,5 +3,5 @@
 set -x
 
 # Testing script
-source ~/.python/bin/activate
+source ~/.pythonenv/bin/activate
 python ./main.py

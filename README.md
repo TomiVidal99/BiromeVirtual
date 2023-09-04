@@ -5,6 +5,7 @@ Una birome que reemplaza al mouse virtualmente a partir IA
 - opencv-python
 - numpy
 - pyautogui
+- screeninfo
 
 ## TODO
 - [ ] .

@@ -1,1 +1,6 @@
-sh ./test.sh
+# Run code
+make run
+# Build GUI
+make build-gui
+# Edit GUI
+make edit-gui

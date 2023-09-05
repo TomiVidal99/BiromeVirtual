@@ -1,5 +1,8 @@
 import cv2 as cv
 
+from src.storage.Storage import Storage
+from src.utils.Log import Log
+
 
 class App:
     """
@@ -8,12 +11,21 @@ class App:
     """
 
     def __init__(self) -> None:
+        super().__init__()
+        self.appname = "BiromeVirtual"
+        self.Log = Log()
+        self.storage = Storage()
+        # self.gui = QApplication
         self.isAppRunning = True
         self.cap = None
         self.frame = None
         self.QUITTING_KEY = "q"
+        self.cap = cv.VideoCapture(0)
+        self.showLiveFeed = True
 
-        self.startGUI()
+        self.applyUserSettings()
+        self.buildGUI()
+        self.connectGUIButtons()
         self.startMainLoop()
         return None
 
@@ -23,38 +35,55 @@ class App:
         """
         while self.isAppRunning:
             if not self.startLiveFeed():
-                print("Some error ocurred with the camera")
+                self.Log.error("Some error ocurred with the camera")
 
             self.handleQuit()
 
         return None
 
-    def startGUI(self) -> None:
+    def buildGUI(self) -> None:
         """
         Starts the GUI
-        TODO
         """
+        # self.ui_components = (
+        #     Ui_MainWindow()
+        # )  # this imports the GUI created in the qt-designer
+        # self.ui_components.setupUi(self)  # this initializes the UI components
+        # self.setWindowTitle(self.appname)
+        # self.show()
+
+        return None
+
+    def connectGUIButtons(self) -> None:
+        """
+        Hook up the callbacks to the buttons click events
+        """
+        # self.ui_components.toggle_camera_feed.clicked.connect(
+        #     lambda: self.setShowLiveFeed(not self.showLiveFeed)
+        # )
+
         return None
 
     def startLiveFeed(self) -> bool:
         """
         Gets the camera up and running
         Updates the frame value
+        And shows the livefeed if set to active
         """
-        self.cap = cv.VideoCapture(0)
-        if self.cap.isOpened():
+        if not self.cap or not self.cap.isOpened():
             # TODO: handle this in some other way
-            print("Cannot open camera")
+            self.Log.error("Cannot open camera")
             return False
 
         ret, self.frame = self.cap.read()
 
         # if frame is read correctly ret is True
         if not ret:
-            print("Can't receive frame (stream end?). Exiting ...")
+            self.Log.error("Can't receive frame (stream end?). Exiting ...")
             return False
 
-        cv.imshow("frame", self.frame)
+        if self.showLiveFeed:
+            cv.imshow("frame", self.frame)
 
         return True
 
@@ -62,14 +91,41 @@ class App:
         """
         Quits the app
         It should close and quit all proceses
+        TODO
         """
 
+        # TODO: change this behaviour to just toggle the camera feed
         if cv.waitKey(1) == ord(self.QUITTING_KEY):
             self.isAppRunning = False
-            # TODO define a clean up method
-            if self.cap:
-                self.cap.release()
-            cv.destroyAllWindows()
-            return None
 
         return None
+
+    def setShowLiveFeed(self, show) -> None:
+        """
+        Sets the live feed on or off
+        """
+        self.showLiveFeed = show
+
+        return None
+
+    def applyUserSettings(self) -> None:
+        """
+        Retrieves the user settings
+        """
+
+        self.Log.warn("Applying user settings...")
+
+        self.setShowLiveFeed(
+            True if self.storage.getSetting("camera", "livefeed") == "True" else False
+        )
+
+        return None
+
+    def __del__(self):
+        """
+        Clean up method
+        """
+        if self.cap:
+            self.cap.release()
+        self.cap = None
+        cv.destroyAllWindows()

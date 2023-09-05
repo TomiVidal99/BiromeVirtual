@@ -1,4 +1,9 @@
-from typing import Union
+import os
+import shutil
+import configparser
+
+from src.utils.getDefaultSettingsPath import getDefaultSettingsPath
+from src.utils.Log import Log
 
 
 class Storage:
@@ -8,39 +13,47 @@ class Storage:
     """
 
     def __init__(self) -> None:
+        self.Log = Log()
+        self.DEFAULT_SETTINGS_FILEPATH = "./src/storage/defaultSettings.ini"
+        self.SETTINGS_FILENAME = "settings.ini"
+        self.SETTINGS_PATH = getDefaultSettingsPath()
+        self.SETTINGS_FILEPATH = os.path.join(
+            self.SETTINGS_PATH, self.SETTINGS_FILENAME
+        )
+        self.config = configparser.ConfigParser()
+        self.settings = None
+
         self.loadSettings()
-        return None
-
-    def loadDefaultSettings(self) -> None:
-        """
-        Loads the default settings
-        TODO
-        """
-
         return None
 
     def loadSettings(self) -> None:
         """
         Loads the stored user settings
-        TODO
         """
+        if not os.path.exists(self.SETTINGS_FILEPATH):
+            # copy the settings.init in first init
+            os.makedirs(self.SETTINGS_PATH, exist_ok=True)
+            shutil.copy(self.DEFAULT_SETTINGS_FILEPATH, self.SETTINGS_FILEPATH)
+            self.loadSettings()
+
+        self.settings = self.config.read(self.SETTINGS_FILEPATH)
+        self.Log.info("loaded settings successfully")
 
         return None
 
-    def setSetting(self, data: Union[str, str]) -> bool:
+    def setSetting(self, section: str, key: str, value: str) -> None:
         """
         Sets an user setting
-        Returns True if the saving was successful
-        TODO
         """
 
-        return False
+        self.config.set(section, key, value)
 
-    def getSetting(self, key: str) -> str | None:
+        return None
+
+    def getSetting(self, section: str, key: str) -> str | None:
         """
         Returns an user setting
         Returns None if the setting was not found
-        TODO
         """
 
-        return None
+        return self.config.get(section, key)

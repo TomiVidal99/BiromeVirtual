@@ -1,6 +1,6 @@
 CC=python
-DESIGNER=designer-qt5
-CGUI=pyuic5
+DESIGNER=designer
+CGUI=pyuic6
 
 MAINFILE=main.py
 

@@ -1,9 +1,14 @@
+from enum import Enum
 import os
 import shutil
 import configparser
+from typing import Literal
 
 from src.utils.getDefaultSettingsPath import getDefaultSettingsPath
 from src.utils.Log import Log
+
+SECTIONS = Literal["camera", "threshold_colors"]
+KEYS = Literal["livefeed", "low_a", "high_a", "low_b", "high_b"]
 
 
 class Storage:
@@ -23,6 +28,8 @@ class Storage:
         self.config = configparser.ConfigParser()
         self.settings = None
 
+        self.Log.info(f"setting path: {self.SETTINGS_FILEPATH}")
+
         self.loadSettings()
         return None
 
@@ -41,19 +48,36 @@ class Storage:
 
         return None
 
-    def setSetting(self, section: str, key: str, value: str) -> None:
+    def setSetting(self, section: SECTIONS, key: KEYS, value: str) -> None:
         """
         Sets an user setting
         """
+
+        if not self.config.has_section(section):
+            self.config.add_section(section)
 
         self.config.set(section, key, value)
 
         return None
 
-    def getSetting(self, section: str, key: str) -> str | None:
+    def getSetting(self, section: SECTIONS, key: KEYS) -> str | None:
         """
         Returns an user setting
         Returns None if the setting was not found
         """
 
+        if not self.config.has_section(section):
+            return ""
+
+        if not self.config.has_option(section, key):
+            return ""
+
         return self.config.get(section, key)
+
+    def saveUserSettings(self) -> None:
+        """
+        Saves the current config to the user settings file
+        """
+        with open(self.SETTINGS_FILEPATH, "w") as configfile:
+            self.config.write(configfile)
+        return None

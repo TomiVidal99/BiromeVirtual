@@ -1,11 +1,10 @@
-from PyQt6.QtWidgets import QMainWindow, QVBoxLayout, QWidget
-import cv2 as cv
+from PyQt6.QtGui import QColor, QPalette
+from PyQt6.QtWidgets import QColorDialog, QFrame, QMainWindow, QVBoxLayout, QWidget
 from src.camera.CameraWidget import CameraWidget
 from src.GUI.app_ui import Ui_MainWindow
 
-from src.storage.Storage import Storage
+from src.storage.Storage import KEYS, SECTIONS, Storage
 from src.utils.Log import Log
-from src.camera.Camera import Camera
 
 
 class App(QMainWindow):
@@ -21,8 +20,8 @@ class App(QMainWindow):
         self.storage = Storage()
         self.isAppRunning = True
 
-        self.applyUserSettings()
         self.buildGUI()
+        self.applyUserSettings()
         self.connectGUIButtons()
         return None
 
@@ -61,6 +60,26 @@ class App(QMainWindow):
         Hook up the callbacks to the buttons click events
         """
         self.ui_components.toggle_camera_feed.clicked.connect(self.handleToggleLiveFeed)
+        self.ui_components.button_color_a_lower.clicked.connect(
+            lambda: self.handlePickColor(
+                self.ui_components.display_color_a_lower, "threshold_colors", "low_a"
+            )
+        )
+        self.ui_components.button_color_a_higher.clicked.connect(
+            lambda: self.handlePickColor(
+                self.ui_components.display_color_a_higher, "threshold_colors", "high_a"
+            )
+        )
+        self.ui_components.button_color_b_lower.clicked.connect(
+            lambda: self.handlePickColor(
+                self.ui_components.display_color_b_lower, "threshold_colors", "low_b"
+            )
+        )
+        self.ui_components.button_color_b_higher.clicked.connect(
+            lambda: self.handlePickColor(
+                self.ui_components.display_color_b_higher, "threshold_colors", "high_b"
+            )
+        )
 
         return None
 
@@ -92,6 +111,32 @@ class App(QMainWindow):
             True if self.storage.getSetting("camera", "livefeed") == "True" else False
         )
 
+        # Colors
+        self.setComponentBgColor(
+            self.ui_components.display_color_a_lower,
+            self.getColorFromString(
+                self.storage.getSetting("threshold_colors", "low_a")
+            ),
+        )
+        self.setComponentBgColor(
+            self.ui_components.display_color_a_higher,
+            self.getColorFromString(
+                self.storage.getSetting("threshold_colors", "high_a")
+            ),
+        )
+        self.setComponentBgColor(
+            self.ui_components.display_color_b_lower,
+            self.getColorFromString(
+                self.storage.getSetting("threshold_colors", "low_b")
+            ),
+        )
+        self.setComponentBgColor(
+            self.ui_components.display_color_b_higher,
+            self.getColorFromString(
+                self.storage.getSetting("threshold_colors", "high_b")
+            ),
+        )
+
         return None
 
     def handleToggleLiveFeed(self) -> None:
@@ -108,9 +153,39 @@ class App(QMainWindow):
             self.camera_window.hide()
         return None
 
-    def __del__(self) -> None:
+    def handlePickColor(self, component: QFrame, section: SECTIONS, key: KEYS) -> None:
+        color = QColorDialog().getColor()
+        if color.isValid():
+            colorStr = color.name()
+            self.storage.setSetting(section, key, colorStr)
+            self.Log.info(f"You've picked: {colorStr}, {section}, {key}")
+            self.setComponentBgColor(component, color)
+
+    def setComponentBgColor(self, component: QFrame, color: QColor) -> None:
+        """
+        Sets the background color of a component
+        """
+        palette = QPalette()
+        palette.setColor(QPalette.ColorRole.Window, color)
+        component.setAutoFillBackground(True)
+        component.setPalette(palette)
+        return None
+
+    def getColorFromString(self, string: str | None) -> QColor:
+        """
+        Returns a QColor from a given string like '#000'
+        """
+        color = QColor()
+        if string is None:
+            return color
+        color.setNamedColor(string)
+        return color
+
+    def closeEvent(self, event) -> None:
         """
         Clean up method
         TODO
         """
+        self.Log.warn("Saving data before quitting")
+        self.storage.saveUserSettings()
         return None

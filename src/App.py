@@ -18,7 +18,6 @@ class App(QMainWindow):
         self.appname = "BiromeVirtual"
         self.Log = Log()
         self.storage = Storage()
-        self.isAppRunning = True
 
         self.buildGUI()
         self.applyUserSettings()
@@ -80,15 +79,6 @@ class App(QMainWindow):
                 self.ui_components.display_color_b_higher, "threshold_colors", "high_b"
             )
         )
-
-        return None
-
-    def handleQuit(self) -> None:
-        """
-        Quits the app
-        It should close and quit all proceses
-        TODO
-        """
 
         return None
 
@@ -154,7 +144,10 @@ class App(QMainWindow):
         return None
 
     def handlePickColor(self, component: QFrame, section: SECTIONS, key: KEYS) -> None:
-        color = QColorDialog().getColor()
+        defaultColorStr = self.storage.getSetting(section, key)
+        defaultColor = QColor()
+        defaultColor.setNamedColor(defaultColorStr if defaultColorStr else "#fff")
+        color = QColorDialog().getColor(defaultColor)
         if color.isValid():
             colorStr = color.name()
             self.storage.setSetting(section, key, colorStr)
@@ -184,7 +177,6 @@ class App(QMainWindow):
     def closeEvent(self, event) -> None:
         """
         Clean up method
-        TODO
         """
         self.Log.warn("Saving data before quitting")
         self.storage.saveUserSettings()

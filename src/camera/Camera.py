@@ -1,7 +1,6 @@
-from typing import List, Tuple
+from typing import Tuple
 from PyQt6.QtGui import QColor
 import cv2 as cv
-from cv2.typing import MatLike
 import numpy as np
 import pyautogui
 import screeninfo
@@ -68,7 +67,7 @@ class Camera:
         print(f"{a}, {b}, {c}")
         lower_A = np.array([a, b, c])
         print(lower_A)
-        a, b, c = self.getColorFromSettings("low_b")
+        a, b, c = self.getColorFromSettings("high_a")
         print(f"{a}, {b}, {c}")
         upper_A = np.array([a, b, c])
         print(upper_A)
@@ -93,7 +92,7 @@ class Camera:
             contour for contour in contours_B if cv.contourArea(contour) >= MIN_AREA
         ]
 
-        for contour in contours_A:
+        for contour in filtered_contours_A:
             x, y, w, h = cv.boundingRect(contour)
             cv.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 3)
 

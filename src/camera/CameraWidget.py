@@ -4,13 +4,14 @@ from PyQt6.QtCore import QTimer
 from PyQt6.QtWidgets import QLabel, QPushButton, QVBoxLayout, QWidget
 
 from src.camera.Camera import Camera
+from src.storage.Storage import Storage
 
 
 class CameraWidget(QWidget):
-    def __init__(self):
+    def __init__(self, storage: Storage):
         super().__init__()
 
-        self.camera = Camera()
+        self.camera = Camera(storage)
 
         self.widget_layout = QVBoxLayout()
         self.label = QLabel()

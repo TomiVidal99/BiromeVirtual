@@ -4,3 +4,5 @@ make run
 make build-gui
 # Edit GUI
 make edit-gui
+# Setup the python environment
+sh setup.sh

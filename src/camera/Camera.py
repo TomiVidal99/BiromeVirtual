@@ -1,9 +1,13 @@
+from typing import List, Tuple
+from PyQt6.QtGui import QColor
 import cv2 as cv
+from cv2.typing import MatLike
 import numpy as np
 import pyautogui
 import screeninfo
 
 from src.utils.Log import Log
+from src.storage.Storage import KEYS, Storage
 
 MIN_AREA = 300
 
@@ -12,7 +16,8 @@ SCREEN_HEIGHT = screeninfo.get_monitors()[0].height
 
 
 class Camera:
-    def __init__(self):
+    def __init__(self, storage: Storage):
+        self.storage = storage
         self.Log = Log()
         self.frame = None
         self.ret = None
@@ -25,13 +30,76 @@ class Camera:
 
         ret, self.frame = self.cap.read()
 
-        self.drawGreenRects()
+        self.calculatePointVector()
 
         if not ret:
             self.Log.error("Can't receive frame (stream end?). Exiting ...")
             return False
 
         return True
+
+    def getColorFromSettings(self, key: KEYS) -> Tuple[int, int, int]:
+        """
+        Returns an array as HSV from a stored settings color
+        """
+        storedColor = self.storage.getSetting("threshold_colors", key)
+        color = QColor()
+        color.setNamedColor(storedColor if storedColor is not None else "")
+        if not color.isValid():
+            return (255, 255, 255)
+
+        hue = color.hue()
+        saturation = color.saturation()
+        value = color.value()
+        return (hue, saturation, value)
+
+    def calculatePointVector(self) -> None:
+        """
+        Calculates the vector between A and B and moves the mouse
+        """
+
+        frame = self.frame
+        if frame is None:
+            return
+
+        hsv = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
+
+        a, b, c = self.getColorFromSettings("low_a")
+        print(f"{a}, {b}, {c}")
+        lower_A = np.array([a, b, c])
+        print(lower_A)
+        a, b, c = self.getColorFromSettings("low_b")
+        print(f"{a}, {b}, {c}")
+        upper_A = np.array([a, b, c])
+        print(upper_A)
+
+        lower_B = np.array([100, 100, 100])
+        upper_B = np.array([130, 255, 255])
+
+        mask_A = cv.inRange(hsv, lower_A, upper_A)
+        mask_B = cv.inRange(hsv, lower_B, upper_B)
+
+        contours_A, _ = cv.findContours(
+            mask_A, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE
+        )
+        filtered_contours_A = [
+            contour for contour in contours_A if cv.contourArea(contour) >= MIN_AREA
+        ]
+
+        contours_B, _ = cv.findContours(
+            mask_B, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE
+        )
+        filtered_contours_B = [
+            contour for contour in contours_B if cv.contourArea(contour) >= MIN_AREA
+        ]
+
+        for contour in contours_A:
+            x, y, w, h = cv.boundingRect(contour)
+            cv.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 3)
+
+        for contour in filtered_contours_B:
+            x, y, w, h = cv.boundingRect(contour)
+            cv.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 3)
 
     def drawGreenRects(self) -> None:
         """

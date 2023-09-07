@@ -43,7 +43,7 @@ class App(QMainWindow):
         container_layout = QVBoxLayout()
         container_widget.setLayout(container_layout)
 
-        self.camera_widget = CameraWidget()
+        self.camera_widget = CameraWidget(self.storage)
 
         # Add the CameraWidget to the container
         container_layout.addWidget(self.camera_widget)
